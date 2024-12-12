@@ -246,7 +246,7 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 	private void startNextRound() {
 		currentRound++;
 		isRoundEnding = false;
-		timeSec = 15;
+		timeSec = 5;
 		bullet = 6;
 		canShoot = true;
 		background.nextTimeOfDay();
@@ -275,7 +275,7 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 		// 點擊進入遊戲
 		if (gameMod == 1) {
 			gameMod = 2;
-			timeSec = 15;
+			timeSec = 5;
 			ticks = 0;
 		}
 
@@ -320,8 +320,26 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 
 	@Override
 	public void keyPressed(KeyEvent e) {
+		// 重新開始 - 修改判斷條件，移除timeSec == 0的限制
+		if (e.getKeyCode() == KeyEvent.VK_R && gameMod == 2) {
+			// 重置所有遊戲數據
+			timeSec = 15;
+			score = 0;
+			hitCount = 0;
+			shootCount = 0;
+			bullet = 6;
+			hitRate = 0;
+			canShoot = true;
+			gameMod = 2;
+			currentRound = 1;
+			isRoundEnding = false;
 
+			// 重置飛靶
+			T1 = new Traget(false);
+			T2 = new Traget(false);
+		}
 	}
+
 
 	public static void main(String[] args) {
 		shootGame = new TrapShooting();
