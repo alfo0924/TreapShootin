@@ -13,7 +13,6 @@ import java.awt.event.MouseMotionListener;
 import java.text.DecimalFormat;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class TrapShooting implements ActionListener , MouseListener , MouseMotionListener ,KeyListener{
@@ -44,7 +43,11 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 	public int ticks;
 	// 1遊戲開始畫面  2 遊戲執行 
 	public int gameMod =1;
-	
+	// 新增輪次相關變數
+	private int currentRound = 1;
+	private int maxRounds = 4;
+	private boolean isRoundEnding = false;
+	private int roundEndCounter = 5;
 	
 	
 	TrapShooting(){
@@ -73,8 +76,8 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 		if(ticks% 50 == 0) {
 			if(timeSec >0) {
 				timeSec --;
-			}		
-		}				
+			}
+		}
 		//飛靶生成
 		if( (T1.getX()> 700 || T1.getX() < -20) && timeSec >0 && gameMod ==2  && canShoot) {
 			T1 = new Traget(true);
@@ -93,6 +96,8 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 		
 		MP.repaint();
 	}
+
+
 	//填充子彈
 	public void fillBullet() {
 		
@@ -112,7 +117,12 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 		g.setColor(Color.white);
 		g.fillRect(0, 0, WIDTH, HEIGHT);
 		//畫背景
-		Background(g);
+		// 在TrapShooting類別中
+		Background background = new Background();
+
+// 在repaint方法中，將原本的Background(g)改為：
+		background.drawBackground(g);
+
 		//畫靶
 		T1.drawTraget(g);
 		T2.drawTraget(g);
@@ -187,35 +197,7 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 		g2.drawLine(mouseX+1, mouseY-30, mouseX+1, mouseY-15);
 		
 	}
-	//畫背景
-	public void Background(Graphics g) {
-		//藍天
-		g.setColor(Color.cyan);
-		g.fillRect(0, 0, WIDTH, 2 *HEIGHT /3);
-		//遠山
-		g.setColor(Color.green.darker().darker());
-		g.fillOval(-50, HEIGHT /2, 200, 400);
-		g.fillOval(100, HEIGHT /2, 400, 200);
-		g.fillOval(400, HEIGHT /2, 300, 240);
-		//白雲
-		g.setColor(Color.white);
-		g.fillOval(100, 150, 100, 30);
-		g.fillOval(400, 200, 150, 45);
-		//山林
-		g.setColor(Color.black);
-		g.fillOval(10, HEIGHT /2 -20, 20, 60);
-		g.fillOval(100, HEIGHT /2 +20, 20, 60);
-		g.fillOval(180, HEIGHT /2 -15, 20, 60);
-		g.fillOval(300, HEIGHT /2 -25, 20, 60);
-		g.fillOval(500, HEIGHT /2 -20, 20, 60);
-		//綠地
-		g.setColor(Color.green);
-		g.fillRect(0, 2 * HEIGHT /3 , WIDTH, HEIGHT /3);
-		//畫台面
-		g.setColor(Color.orange.darker());
-		g.fillRect(0, (HEIGHT/10)*9 , WIDTH, (HEIGHT/10)*9 );
-		
-	}
+
 	//畫現有子彈數量
 	public void bullets(int bullet,Graphics g) {
 		
@@ -259,13 +241,15 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 		//射擊點
 		clickX = e.getX()-8;
 		clickY = e.getY()-37;
-		
-		
+
+
 		//射擊判定
 		if(canShoot && timeSec >0 && gameMod==2) {
 			if(T1.isHit(clickX, clickY)) {
 				score += T1.getScore();
 				System.out.println("總分:"+score);
+				Background background = new Background();
+				background.nextTimeOfDay();
 				hitCount ++;
 			}
 			if(T2.isHit(clickX, clickY)) {
@@ -281,7 +265,7 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 		//點擊進入遊戲
 		if(gameMod ==1) {
 			gameMod =2;
-			timeSec = 30;
+			timeSec =15;
 			ticks =0;	
 			
 		}
@@ -316,6 +300,14 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 		//MouseY = point.y;
 		
 	}
+	private void startNextRound() {
+		currentRound++;
+		isRoundEnding = false;
+		timeSec = 30;
+		bullet = 6;
+		canShoot = true;
+		// 不重置分數，讓分數繼續累加
+	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {}
@@ -330,18 +322,19 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		//重新開始
-		if(timeSec == 0 && e.getKeyCode() == KeyEvent.VK_R) {
-
-			timeSec = 30; 
+		// 修改重新開始功能
+		if(timeSec == 0 && currentRound >= maxRounds && e.getKeyCode() == KeyEvent.VK_R) {
+			timeSec = 30;
 			score = 0;
-			hitCount =0;
-			shootCount =0;
+			hitCount = 0;
+			shootCount = 0;
 			bullet = 6;
-			hitRate =0;
+			hitRate = 0;
+			currentRound = 1;
+			isRoundEnding = false;
 		}
-		
 	}
+
 	@Override
 	public void keyReleased(KeyEvent arg0) {}
 	@Override
@@ -353,10 +346,3 @@ public class TrapShooting implements ActionListener , MouseListener , MouseMotio
 }
 
 
-class myPanel extends JPanel{
-	private static final long serialVersionUID = 1L;
-	public void paintComponent(Graphics g) {
-		TrapShooting.shootGame.repaint(g);
-	}
-	
-}
