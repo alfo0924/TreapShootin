@@ -22,8 +22,8 @@ public class GameRenderer {
         gameState.background.drawBackground(g);
 
         // 畫靶
-        gameState.T1.drawTraget(g);
-        gameState.T2.drawTraget(g);
+        gameState.T1.drawTarget(g);
+        gameState.T2.drawTarget(g);
     }
 
     private void drawUI(Graphics g, GameState gameState) {

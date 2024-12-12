@@ -36,8 +36,8 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 	private void initializeGame() {
 		renderer = new GameRenderer();
 		gameState = new GameState();
-		gameState.T1 = new Traget(false);
-		gameState.T2 = new Traget(false);
+		gameState.T1 = new Target(false);
+		gameState.T2 = new Target(false);
 		gameState.background = new Background();
 		gameState.bullet = 6;
 		gameState.canShoot = true;
@@ -100,9 +100,9 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 	private void updateTargets() {
 		if ((gameState.T1.getX() > 700 || gameState.T1.getX() < -20) &&
 				gameState.timeSec > 0 && gameState.gameMod == 2 && gameState.canShoot) {
-			gameState.T1 = new Traget(true);
+			gameState.T1 = new Target(true);
 			if (gameState.bullet > 2 && (int)(Math.random() * 10 + 1) > 9) {
-				gameState.T2 = new Traget(true);
+				gameState.T2 = new Target(true);
 			}
 		}
 
@@ -210,8 +210,8 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 		gameState.gameMod = 2;
 		gameState.currentRound = 1;
 		gameState.isRoundEnding = false;
-		gameState.T1 = new Traget(false);
-		gameState.T2 = new Traget(false);
+		gameState.T1 = new Target(false);
+		gameState.T2 = new Target(false);
 	}
 
 	// 必要的空實現

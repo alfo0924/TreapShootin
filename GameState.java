@@ -14,8 +14,8 @@ public class GameState {
     public int mouseX;
     public int mouseY;
     public Background background;
-    public Traget T1;
-    public Traget T2;
+    public Target T1;
+    public Target T2;
     public int ticks;
     public int clickX;
     public int clickY;
