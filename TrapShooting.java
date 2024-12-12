@@ -1,8 +1,4 @@
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -27,11 +23,13 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 	public static final int WIDTH = 600;
 	public static final int HEIGHT = 800;
 
-	// 遊戲模式常數
-	public static final int MENU_MODE = 0;
-	public static final int DIFFICULTY_SELECT = 1;
-	public static final int GAME_PLAYING = 2;
-	public static final int GAME_OVER = 3;
+	// 遊戲狀態常量
+	public static final int MENU_MODE = 0;        // 主選單
+	public static final int MODE_SELECT = 1;      // 模式選擇
+	public static final int DIFFICULTY_SELECT = 2; // 難度選擇
+	public static final int GAME_PLAYING = 3;     // 遊戲進行中
+	public static final int GAME_OVER = 4;        // 遊戲結束
+
 
 	// 難度常數
 //	public static final int EASY = 1;
@@ -84,22 +82,50 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		gameState.ticks++;
-
 		switch (gameState.gameMod) {
+			case MENU_MODE:
+				updateMenu();
+				break;
+			case MODE_SELECT: // 需要添加這個狀態
+				updateModeSelect();
+				break;
+			case DIFFICULTY_SELECT:
+				updateDifficultySelect();
+				break;
 			case GAME_PLAYING:
 				updateGamePlay();
-				break;
-			case MENU_MODE:
-			case DIFFICULTY_SELECT:
-				updateMenu();
 				break;
 			case GAME_OVER:
 				updateGameOver();
 				break;
 		}
-
 		MP.repaint();
 	}
+
+	private void updateDifficultySelect() {
+		// 更新難度選擇畫面的動畫效果
+		for (int i = 0; i < gameState.difficultyButtons.length; i++) {
+			if (isButtonHovered(gameState.difficultyButtons[i], gameState.mouseX, gameState.mouseY)) {
+				// 可以添加懸停動畫效果
+				break;
+			}
+		}
+	}
+
+	private boolean isButtonHovered(Rectangle difficultyButton, int mouseX, int mouseY) {
+		return difficultyButton != null && difficultyButton.contains(mouseX, mouseY);
+	}
+
+	private void updateModeSelect() {
+		// 更新模式選擇畫面的動畫效果
+		for (int i = 0; i < gameState.menuButtons.length; i++) {
+			if (isButtonHovered(gameState.menuButtons[i], gameState.mouseX, gameState.mouseY)) {
+				// 可以添加懸停動畫效果
+				break;
+			}
+		}
+	}
+
 
 	private void updateGamePlay() {
 		updateTimer();
@@ -158,6 +184,22 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 		}
 		return (int)(Math.random() * 10 + 1) > chance;
 	}
+	private void handleGameStart() {
+		switch (gameState.gameMod) {
+			case MENU_MODE:
+				gameState.gameMod = MODE_SELECT; // 正確
+				break;
+			case MODE_SELECT: // 缺少這個狀態的處理
+				gameState.gameMod = DIFFICULTY_SELECT;
+				break;
+			case DIFFICULTY_SELECT:
+				gameState.gameMod = GAME_PLAYING;
+				gameState.timeSec = 5;
+				gameState.ticks = 0;
+				break;
+		}
+	}
+
 
 	private void updateScoreMultiplier() {
 		// 基礎倍率
@@ -203,21 +245,20 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 	}
 
 	private void updateGameOver() {
-		// 遊戲結束畫面更新邏輯
+		// 更新遊戲結束畫面的動畫效果
+		if (gameState.ticks % 30 == 0) {
+			// 閃爍效果
+			gameState.showRestartPrompt = !gameState.showRestartPrompt;
+		}
+
+		// 更新最終分數顯示
+		if (gameState.score > gameState.best) {
+			gameState.best = gameState.score;
+		}
 	}
 
-	private void checkMenuSelection() {
-		// 根據滑鼠位置檢查選單選擇
-		int menuY = HEIGHT / 2;
-		if (gameState.clickY >= menuY - 50 && gameState.clickY <= menuY + 50) {
-			if (gameState.clickY <= menuY) {
-				gameState.isEndlessMode = false;
-			} else {
-				gameState.isEndlessMode = true;
-			}
-			gameState.gameMod = DIFFICULTY_SELECT;
-		}
-	}  private void checkDifficultySelection() {
+
+	private void checkDifficultySelection() {
 		int diffY = HEIGHT / 2;
 		if (gameState.clickY >= diffY - 75 && gameState.clickY <= diffY + 75) {
 			if (gameState.clickY <= diffY - 25) {
@@ -259,8 +300,13 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 
 		switch (gameState.gameMod) {
 			case MENU_MODE:
-			case DIFFICULTY_SELECT:
 				handleMenuClick();
+				break;
+			case MODE_SELECT:
+				handleModeSelect();
+				break;
+			case DIFFICULTY_SELECT:
+				handleDifficultySelect();
 				break;
 			case GAME_PLAYING:
 				handleShooting();
@@ -273,11 +319,51 @@ public class TrapShooting implements ActionListener, MouseListener, MouseMotionL
 		}
 	}
 
+	private void handleModeSelect() {
+		// 處理模式選擇的點擊事件
+		if (gameState.clickY >= GameRenderer.FIRST_BUTTON_Y && gameState.clickY <= GameRenderer.FIRST_BUTTON_Y + GameRenderer.BUTTON_HEIGHT) {
+			gameState.isEndlessMode = false;
+			gameState.gameMod = DIFFICULTY_SELECT;
+		} else if (gameState.clickY >= GameRenderer.FIRST_BUTTON_Y + GameRenderer.BUTTON_HEIGHT + GameRenderer.BUTTON_SPACING &&
+				gameState.clickY <= GameRenderer.FIRST_BUTTON_Y + (GameRenderer.BUTTON_HEIGHT + GameRenderer.BUTTON_SPACING) * 2) {
+			gameState.isEndlessMode = true;
+			gameState.gameMod = DIFFICULTY_SELECT;
+		}
+	}
+
+	private void handleDifficultySelect() {
+		int buttonY = GameRenderer.FIRST_BUTTON_Y;
+		if (gameState.clickY >= buttonY && gameState.clickY < buttonY + GameRenderer.BUTTON_HEIGHT) {
+			gameState.difficulty = DifficultyLevel.EASY;
+			startGame();
+		} else if (gameState.clickY >= buttonY + GameRenderer.BUTTON_HEIGHT + GameRenderer.BUTTON_SPACING &&
+				gameState.clickY < buttonY + (GameRenderer.BUTTON_HEIGHT + GameRenderer.BUTTON_SPACING) * 2) {
+			gameState.difficulty = DifficultyLevel.NORMAL;
+			startGame();
+		} else if (gameState.clickY >= buttonY + (GameRenderer.BUTTON_HEIGHT + GameRenderer.BUTTON_SPACING) * 2 &&
+				gameState.clickY < buttonY + (GameRenderer.BUTTON_HEIGHT + GameRenderer.BUTTON_SPACING) * 3) {
+			gameState.difficulty = DifficultyLevel.HARD;
+			startGame();
+		}
+	}
+
+
 	private void handleMenuClick() {
 		if (gameState.gameMod == MENU_MODE) {
 			checkMenuSelection();
 		} else if (gameState.gameMod == DIFFICULTY_SELECT) {
 			checkDifficultySelection();
+		}
+	}
+
+	private void checkMenuSelection() {
+		// 檢查模式選擇按鈕點擊
+		if (gameState.isButtonClicked(gameState.menuButtons[0], gameState.clickX, gameState.clickY)) {
+			gameState.isEndlessMode = false;
+			gameState.gameMod = MODE_SELECT;
+		} else if (gameState.isButtonClicked(gameState.menuButtons[1], gameState.clickX, gameState.clickY)) {
+			gameState.isEndlessMode = true;
+			gameState.gameMod = MODE_SELECT;
 		}
 	}
 
