@@ -1,7 +1,6 @@
-# TrapShootin
-飛靶遊戲
-![image](https://github.com/wnqui/TrapShooting/blob/master/TrapShooting.jpg)
+# TrapShootin 飛靶遊戲
 
+![image](https://github.com/wnqui/TrapShooting/blob/master/TrapShooting.jpg)
 ## 核心架構
 
 遊戲採用 MVC（Model-View-Controller）設計模式的變體，主要分為三個核心組件：
